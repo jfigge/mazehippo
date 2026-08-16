@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The field the mark sits on, as a colour rather than as a picture.
+
+     An adaptive icon's background is a full-bleed 108dp layer, and this one is
+     a single flat magenta — so five rasters of it, one per density bucket,
+     would be five files saying #CA2BAF. The colour is the same number
+     `paintMark` fills its square with in tool/app_icon.dart; change it there
+     and change it here.
+-->
+<resources>
+    <color name="ic_launcher_background">#CA2BAF</color>
+</resources>

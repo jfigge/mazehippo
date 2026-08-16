@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The launcher icon on API 26 and up, in the layers the launcher wants to be
+     able to move against each other. Written by hand rather than by
+     `make icon`, for the reason the iOS Contents.json is: it is structure, not
+     drawing, and it does not change when the mark does. The rasters it names
+     are the ones tool/app_icon.dart writes.
+
+     `monochrome` is what Material You themes the icon by: the launcher throws
+     away the colours and tints whatever alpha is left. That is why the
+     foreground and the monochrome layer are two files and not one — the eyes
+     and the arrow are magenta on white here and cut clean through there, and a
+     silhouette that kept them as colour would arrive as a blank head.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+    <monochrome android:drawable="@mipmap/ic_launcher_monochrome" />
+</adaptive-icon>

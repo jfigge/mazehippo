@@ -1,0 +1,48 @@
+# What the analyser is held to, beyond the defaults.
+#
+# The same set Roll Hippo runs, and for the same reason: every rule here
+# describes what the code already does, so turning one on is a promise that the
+# next person — or the next model — cannot quietly stop keeping. A lint that
+# would need the code rewritten to satisfy it is a change of style, and a change
+# of style is not the analyser's to make.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    # The three strict modes. They close the holes `dynamic` opens in an
+    # otherwise sound type system: an implicit downcast, an inference that falls
+    # back to `dynamic` rather than failing, and a generic used bare. The puzzle
+    # layer is integer lattice arithmetic, which is exactly the sort of code
+    # where a silent `num` would hurt and would not look wrong.
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    # "Explicit types on locals and collection literals" — `final Cell head =`,
+    # `<Arrow>[…]`, `for (final Arrow arrow in arrows)`.
+    - always_specify_types
+
+    # And the other half of the same habit: a local that is never reassigned
+    # says so, which is what makes the ones that *are* reassigned — the sweep
+    # cursor in `board.dart`, the retry counters in `generate.dart` — worth
+    # spotting.
+    - prefer_final_locals
+    - prefer_final_in_for_each
+
+    # Imports and exports in one order, so a new one has an obvious place to go
+    # rather than landing wherever the cursor was.
+    - directives_ordering
+
+    # A future nobody waits for should say so.
+    - unawaited_futures
+
+    # Four ways to be wrong that are cheap to rule out. `Cell` writes `==` by
+    # hand and is used as a `Set` key everywhere in the puzzle layer, which is
+    # what makes the third one load-bearing rather than decorative.
+    - avoid_dynamic_calls
+    - cast_nullable_to_non_nullable
+    - test_types_in_equals
+    - throw_in_finally

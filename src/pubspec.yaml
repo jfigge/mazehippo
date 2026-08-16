@@ -1,0 +1,65 @@
+name: mazehippo
+
+# A tap-to-clear puzzle on a lattice: arrows wound through each other, each one
+# leaving in the direction it points if nothing is standing in its way.
+# README.md explains why the collision test is exact rather than approximate,
+# and why the levels are generated backwards.
+description: "Maze Hippo — arrows out of a maze, one tap at a time."
+
+# An app, not a package. Nothing here is meant for pub.dev, and this line is
+# what stops `flutter pub publish` from being able to try.
+publish_to: "none"
+
+# The version people read, and after the `+` the build number the stores count
+# by. Nothing has shipped yet, so the build number is still 1.
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  # Every sound the game makes, on one engine and so on one audio session.
+  #
+  # Chosen for the bed rather than for the blips: it loops a decoded buffer
+  # gaplessly, which `audioplayers` and `just_audio` both fail to do on at least
+  # one target — and an audible seam every 71 seconds would defeat the whole
+  # point of two loops that are not supposed to line up. It also gives per-voice
+  # volume and time-based fades, which is the ducking done for us.
+  #
+  # Linux builds need libasound2-dev present. See ../README.md.
+  flutter:
+    sdk: flutter
+  flutter_soloud: ^4.1.7
+  shared_preferences: ^2.5.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Re-encodes what `tool/app_icon.dart` draws, and only for iOS: App Store
+  # validation rejects an icon that so much as *has* an alpha channel, and the
+  # engine's PNG encoder always writes one. This is what takes it back off.
+  # Nothing under `lib/` imports it — it is a build-time tool rather than part
+  # of the app, which is why it is here and not above.
+  image: ^4.3.0
+
+  # The floor the analyser stands on. `analysis_options.yaml` adds to it, and
+  # explains what each addition is doing there; `make analyze` runs the lot with
+  # infos and warnings fatal.
+  flutter_lints: ^5.0.0
+
+flutter:
+  # The Material icon font, which the chrome draws its few glyphs from — the
+  # lives, and the button that restarts a level.
+  uses-material-design: true
+
+  # The board itself is drawn from integers by `render/board_painter.dart` and
+  # loads nothing. This is the only thing the app ships that it did not draw.
+  assets:
+    # An arrow leaving, and an arrow stopped.
+    - assets/laser_soft.wav
+    - assets/boop.wav
+    # The bed and the flourish. All three are synthesised — `tool/ambience.dart`
+    # is their source of record and `make audio` rewrites them — and the two
+    # loop lengths are 97 and 71 seconds on purpose. See `lib/audio/ambience.dart`.
+    - assets/audio/
