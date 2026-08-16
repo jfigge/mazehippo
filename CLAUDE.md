@@ -35,6 +35,8 @@ Run from the repo root:
 | `make ci` | format-check + analyze + test |
 | `make levels` | print all hundred levels — size, arrows, moves offered, and how long each took to weave |
 | `make board` | render levels into `/tmp/mazehippo/`: one per difficulty band, level 100 at 250%, and the frame the player sees after a wrong tap |
+| `make site-images` | redraw `website/images/` — the hero, the OG card and the six boards on the web page. Writes into the project: those files are what gets published |
+| `make site` | run `site-images`, then `rsync --delete` `website/` into hippoherd's `website/mazehippo/`. The one direction that copy ever goes |
 | `make boop` | redraw `assets/boop.wav` from `tool/boop.dart`. Writes into the project, not `/tmp` — the tool is the sound's source of record |
 | `make icon` | draw the app icon into the iOS, macOS and Android catalogues. Writes into the project — the files it makes *are* the icon |
 | `make audio` | re-render the soundtrack: synthesise the three waveforms, then level and encode them to OGG Vorbis with ffmpeg. Needs `ffmpeg` with `libvorbis`. Writes into the project |
@@ -72,6 +74,10 @@ src/tool/          levels (prints) · board (renders into /tmp/mazehippo/)
                    ambience (synthesises the three audio/ files — writes into the project)
                    app_icon (draws assets/mazehippo.svg into every platform's
                    catalogue — writes into the project)
+                   website (draws website/images/ — writes into the project)
+website/           the product page and the privacy statement served at
+                   hippoherd.com/mazehippo/, written here and copied there.
+                   images/ is drawn by src/tool/website.dart, not captured
 ```
 
 **`lib/puzzle/` does not import Flutter**, only `dart:math`-free integer
@@ -250,3 +256,25 @@ marshal. Flutter starts at `render/`.
   to three channels through the `image` package — the only reason that package
   is a dependency at all. The macOS icons keep their alpha, because the 824/1024
   margin Apple's grid asks for has to be see-through.
+- **The website is written here and copied there, never the other way round.**
+  `hippoherd.com/mazehippo/` is Maze Hippo's site — there is no other one — but
+  the files it serves live in this repository under `website/`, and reach the
+  herd by `make site`, which is an `rsync --delete`. Editing
+  `hippoherd/website/mazehippo/` directly is editing something the next
+  `make site` silently overwrites. The arrangement is safe in the other
+  direction because hippoherd's generator is told to skip that one page:
+  `externalSite: true` on the `mazehippo` entry in its `content/hippos.mjs`,
+  which stops `build-site.mjs` writing an `index.html` over it. Everything
+  *else* about that entry — the card on the herd's front page, the nav
+  dropdown, the footer, the sitemap — is still generated from it, so the prose
+  on the card is edited there and the page is edited here. Roll Hippo has the
+  identical arrangement and got there first.
+- **The pictures on the page are drawn, not screenshotted.** `tool/website.dart`
+  runs the real `BoardPainter` against the real `generateLevel`, so the hero and
+  all six boards are the current game by construction. A capture from a phone
+  would be a picture of whatever the game looked like the day somebody took it,
+  and nothing would ever say it had drifted. It renders at 780 × 1000 rather
+  than the phone's 390 × 700 for a reason worth keeping: the painter draws the
+  board and nothing else, and on a phone the bands above and below a fitted
+  board are where the lives and the clock go — at the phone's aspect ratio those
+  come out as empty dark that reads as a picture with something missing.

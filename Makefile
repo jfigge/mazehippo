@@ -8,7 +8,13 @@ AUDIO    ?= /tmp/mazehippo/audio
 DEVICE   ?= 00008110-000414C63A51401E   # Jason's iPhone
 BUNDLE   := com.mazehippo.mazehippo
 
-.PHONY: help all ci format format-check analyze test desktop ios launch android levels board boop icon audio clean
+# Where hippoherd is checked out. Maze Hippo has no site of its own, so
+# hippoherd.com/mazehippo IS its site and `website/` here is where it is
+# written; `make site` is the one direction that copy ever goes. Same default
+# and same override as Roll Hippo's Makefile, which does the same thing.
+HERD     ?= $(CURDIR)/../../../js/projects/hippoherd
+
+.PHONY: help all ci format format-check analyze test desktop ios launch android levels board boop icon audio site site-images clean
 
 help:  ## Show this help
 	@grep -E '^[a-z0-9-]+:.*?## ' $(firstword $(MAKEFILE_LIST)) \
@@ -94,6 +100,32 @@ board:  ## Render levels to /tmp/mazehippo/ — one per band, zoomed, and a wron
 	@# A painter is checked by looking at it. Run via `flutter test` rather
 	@# than `dart run` because it needs dart:ui to rasterise.
 	cd $(SRC) && flutter test tool/board.dart
+
+site-images:  ## Redraw website/images/ from the real painter
+	@# The pictures on hippoherd.com/mazehippo, drawn by the game rather than
+	@# captured from it. Writes into the project, not /tmp: those files are
+	@# what `make site` publishes, so they are tracked and this is how they
+	@# are redrawn. The absolute path is not decoration — a `flutter test`
+	@# runs with its working directory at $(SRC), and the website is a level
+	@# above that.
+	cd $(SRC) && WEBSITE_OUT=$(CURDIR)/website flutter test tool/website.dart
+	@echo '→ website/images/'
+
+site: site-images  ## Copy the site into hippoherd's Maze Hippo page
+	@# hippoherd's generator leaves that one page alone rather than
+	@# overwriting it; see `externalSite` in its content/hippos.mjs, which is
+	@# what makes this safe. Depends on site-images so that what is published
+	@# is what the current painter draws — the pictures going stale silently
+	@# is the one failure this whole arrangement exists to prevent.
+	@test -d "$(HERD)" || { \
+	  echo "make site: no hippoherd checkout at $(HERD)"; \
+	  echo "  Clone jfigge/hippoherd beside this repo, or pass HERD=<path>."; \
+	  exit 1; }
+	@# --exclude .DS_Store because Finder leaves one in any directory it has
+	@# been asked to show, and it would otherwise be published and committed.
+	rsync -a --delete --exclude .DS_Store website/ "$(HERD)/website/mazehippo/"
+	@echo "→ $(HERD)/website/mazehippo/"
+	@echo "  Commit and push there; the Pages workflow deploys it."
 
 levels:  ## Print every level's shape — size, arrows, branching factor
 	@# What `make test` asserts, written out to be read rather than checked.
